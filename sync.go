@@ -66,6 +66,7 @@ func sync(
 		sort.Strings(labels)
 		ignore, ok := row.get("github_ignore")
 		if ok && ignore != "" {
+			log.Printf(" ignoring %q", title)
 			updateIssues.Values = append(updateIssues.Values, []interface{}{issue})
 			updateStatus.Values = append(updateStatus.Values, []interface{}{row.mustGet("github_status")})
 			updateAssigned.Values = append(updateAssigned.Values, []interface{}{row.mustGet("github_assigned")})
@@ -88,7 +89,7 @@ func sync(
 				Body:   &body,
 				Labels: &labels,
 			})
-			log.Printf("* creating issue %s", iss.GetHTMLURL())
+			log.Printf("* created issue for %q: %s", title, iss.GetHTMLURL())
 			if err != nil {
 				return nil, err
 			}
@@ -105,7 +106,7 @@ func sync(
 			if err != nil {
 				return nil, err
 			}
-			log.Printf("* checking existing issue %s", iss.GetHTMLURL())
+			log.Printf("* checking existing issue for %q: %s", title, iss.GetHTMLURL())
 
 			if !bodyMatch(body, iss.GetBody()) || iss.GetTitle() != title || !labelsMatch(labels, iss.Labels) {
 				log.Printf("** modifying issue as there is a mismatch found")
