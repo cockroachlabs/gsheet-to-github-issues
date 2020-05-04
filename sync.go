@@ -23,6 +23,23 @@ type templateInput struct {
 	Args          map[string]cell
 }
 
+func makeValueRange(
+	spreadsheetName string, numRows int, headers *headerRow, h string,
+) *sheets.ValueRange {
+	return &sheets.ValueRange{
+		MajorDimension: "ROWS",
+		Range: fmt.Sprintf(
+			"%s!%s%d:%s%d",
+			spreadsheetName,
+			headers.mustGetLetter(h),
+			2,
+			headers.mustGetLetter(h),
+			numRows+1,
+		),
+		Values: [][]interface{}{},
+	}
+}
+
 // sync syncs between the sheet rows and the Google Sheet.
 // It returns the updates necessary for Google Sheets.
 func sync(
@@ -32,30 +49,10 @@ func sync(
 	rows []sheetRow,
 	ghClient *github.Client,
 ) ([]*sheets.ValueRange, error) {
-	updateIssues := &sheets.ValueRange{
-		MajorDimension: "ROWS",
-		Range: fmt.Sprintf(
-			"%s!%s%d:%s%d",
-			spreadsheetName,
-			headers.mustGetLetter("github_issue"),
-			2,
-			headers.mustGetLetter("github_issue"),
-			len(rows)+1,
-		),
-		Values: [][]interface{}{},
-	}
-	updateStatus := &sheets.ValueRange{
-		MajorDimension: "ROWS",
-		Range: fmt.Sprintf(
-			"%s!%s%d:%s%d",
-			spreadsheetName,
-			headers.mustGetLetter("github_status"),
-			2,
-			headers.mustGetLetter("github_status"),
-			len(rows)+1,
-		),
-		Values: [][]interface{}{},
-	}
+	updateIssues := makeValueRange(spreadsheetName, len(rows), headers, "github_issue")
+	updateStatus := makeValueRange(spreadsheetName, len(rows), headers, "github_status")
+	updateAssigned := makeValueRange(spreadsheetName, len(rows), headers, "github_assigned")
+
 	ctx := context.Background()
 	timeNow := time.Now().UTC().Format(time.RFC3339)
 	ghUser, _, err := ghClient.Users.Get(ctx, "")
@@ -70,7 +67,8 @@ func sync(
 		ignore, ok := row.get("github_ignore")
 		if ok && ignore != "" {
 			updateIssues.Values = append(updateIssues.Values, []interface{}{issue})
-			updateStatus.Values = append(updateStatus.Values, []interface{}{row.mustGet("github_issue")})
+			updateStatus.Values = append(updateStatus.Values, []interface{}{row.mustGet("github_status")})
+			updateAssigned.Values = append(updateAssigned.Values, []interface{}{row.mustGet("github_assigned")})
 			continue
 		}
 
@@ -109,7 +107,7 @@ func sync(
 			}
 			log.Printf("* checking existing issue %s", iss.GetHTMLURL())
 
-			if iss.GetBody() != body || iss.GetTitle() != title || !labelsMatch(labels, iss.Labels) {
+			if !bodyMatch(body, iss.GetBody()) || iss.GetTitle() != title || !labelsMatch(labels, iss.Labels) {
 				log.Printf("** modifying issue as there is a mismatch found")
 				iss, _, err = ghClient.Issues.Edit(ctx, *flagGithubOwner, *flagGithubRepo, int(issueNum), &github.IssueRequest{
 					Title:  &title,
@@ -124,8 +122,17 @@ func sync(
 
 		updateIssues.Values = append(updateIssues.Values, []interface{}{fmt.Sprintf(`=HYPERLINK("%s", "#%d")`, iss.GetHTMLURL(), iss.GetNumber())})
 		updateStatus.Values = append(updateStatus.Values, []interface{}{iss.GetState()})
+		var assigneeVal string
+		if iss.GetAssignee() != nil {
+			assigneeVal = fmt.Sprintf(`=HYPERLINK("%s", "@%s")`, iss.GetAssignee().GetHTMLURL(), iss.GetAssignee().GetLogin())
+		}
+		updateAssigned.Values = append(updateAssigned.Values, []interface{}{assigneeVal})
 	}
-	return []*sheets.ValueRange{updateIssues, updateStatus}, nil
+	return []*sheets.ValueRange{updateIssues, updateStatus, updateAssigned}, nil
+}
+
+func bodyMatch(a string, b string) bool {
+	return a == b
 }
 
 func labelsMatch(a []string, gh []github.Label) bool {

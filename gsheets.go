@@ -87,7 +87,7 @@ func sheetToRows(headers *headerRow, values *sheets.ValueRange) ([]sheetRow, err
 			values:  make([]cell, len(headers.headers)),
 			headers: headers,
 		}
-		for i := 0; i < len(headers.headers); i++ {
+		for i := 0; i < len(headers.headers) && i < len(valueRow); i++ {
 			switch c := valueRow[i].(type) {
 			case bool:
 				row.values[i] = cell(fmt.Sprintf("%t", c))

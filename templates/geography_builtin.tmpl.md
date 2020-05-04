@@ -13,4 +13,4 @@ The following guidance has been issued on implementing this function:
 {{index .Args "expected_work"}}
 {{end}}
 
-<sub>:robot: This issue was synced with by [gsheets-to-github-issues](https://github.com/cockroachlabs/gsheet-to-github-issues) by [{{ .GithubUser }}]({{ .GithubUserURL }}) at {{ .Time }}.</sub>
+<sub>:robot: This issue was synced with by [gsheets-to-github-issues](https://github.com/cockroachlabs/gsheet-to-github-issues) by [{{ .GithubUser }}]({{ .GithubUserURL }}).</sub>
