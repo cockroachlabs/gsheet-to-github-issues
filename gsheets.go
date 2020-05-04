@@ -14,6 +14,96 @@ import (
 	"google.golang.org/api/sheets/v4"
 )
 
+type cell string
+
+type headerRow struct {
+	headers []string
+	idx     map[string]int
+}
+
+func (h *headerRow) mustGetLetter(header string) string {
+	idx := h.idx[header]
+	letters := ""
+	for idx > 0 {
+		letters += string('A' + (idx % 26))
+		idx /= 26
+	}
+	return letters
+}
+
+type sheetRow struct {
+	values  []cell
+	headers *headerRow
+}
+
+func (r *sheetRow) toMap() map[string]cell {
+	ret := make(map[string]cell, len(r.values))
+	for idx, h := range r.headers.headers {
+		ret[h] = r.values[idx]
+	}
+	return ret
+}
+
+func (r *sheetRow) get(h string) (cell, bool) {
+	if _, ok := r.headers.idx[h]; !ok {
+		return "", false
+	}
+	return r.values[r.headers.idx[h]], true
+}
+
+func (r *sheetRow) mustGet(h string) string {
+	c, ok := r.get(h)
+	if !ok {
+		panic(fmt.Errorf("cannot find header: %s", h))
+	}
+	return string(c)
+}
+
+// headersFromValues returns the headers from a google sheet.
+func headersFromSheet(values *sheets.ValueRange) (*headerRow, error) {
+	if len(values.Values) == 0 {
+		return nil, fmt.Errorf("expected at least one row in range")
+	}
+	ret := &headerRow{
+		idx: map[string]int{},
+	}
+	row := values.Values[0]
+	for idx, header := range row {
+		h, ok := header.(string)
+		if !ok {
+			return nil, fmt.Errorf("expected header row at idx %d to be string, found %T: %v", idx, header, header)
+		}
+		ret.headers = append(ret.headers, h)
+		ret.idx[h] = idx
+	}
+	return ret, nil
+}
+
+// sheetToRows converts values from a sheet range to an interface map of them.
+func sheetToRows(headers *headerRow, values *sheets.ValueRange) ([]sheetRow, error) {
+	ret := make([]sheetRow, 0, len(values.Values)-1)
+	for valueRowIdx, valueRow := range values.Values[1:] {
+		row := sheetRow{
+			values:  make([]cell, len(headers.headers)),
+			headers: headers,
+		}
+		for i := 0; i < len(headers.headers); i++ {
+			switch c := valueRow[i].(type) {
+			case bool:
+				row.values[i] = cell(fmt.Sprintf("%t", c))
+			case float64:
+				row.values[i] = cell(fmt.Sprintf("%f", c))
+			case string:
+				row.values[i] = cell(c)
+			default:
+				return nil, fmt.Errorf("unexpected value row %d at %d: type %T unhandled: %v", valueRowIdx, i, c, c)
+			}
+		}
+		ret = append(ret, row)
+	}
+	return ret, nil
+}
+
 //
 // Boilerplate from quickstart: https://developers.google.com/sheets/api/quickstart/go
 //
@@ -30,13 +120,12 @@ func getSheetsClient() (*sheets.Service, error) {
 	}
 
 	// If modifying these scopes, delete your previously saved token.json.
-	config, err := google.ConfigFromJSON(credentialsBytes, "https://www.googleapis.com/auth/spreadsheets.readonly")
+	config, err := google.ConfigFromJSON(credentialsBytes, "https://www.googleapis.com/auth/spreadsheets")
 	if err != nil {
 		return nil, err
 	}
 	client := getClient(config)
 
-	srv, err := sheets.New(client)
 	return sheets.New(client)
 }
 
