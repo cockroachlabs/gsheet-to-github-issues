@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/otan/go-github/github"
+	"github.com/google/go-github/v30/github"
 	"google.golang.org/api/sheets/v4"
 )
 
