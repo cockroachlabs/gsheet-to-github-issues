@@ -23,12 +23,15 @@ type headerRow struct {
 
 func (h *headerRow) mustGetLetter(header string) string {
 	idx := h.idx[header]
-	letters := ""
+	letters := []byte{}
 	for idx > 0 {
-		letters += string('A' + (idx % 26))
+		letters = append(letters, byte('A'+(idx%26)))
 		idx /= 26
 	}
-	return letters
+	for i, j := 0, len(letters)-1; i < j; i, j = i+1, j-1 {
+		letters[i], letters[j] = letters[j], letters[i]
+	}
+	return string(letters)
 }
 
 type sheetRow struct {

@@ -81,6 +81,12 @@ func sync(
 			Args:          row.toMap(),
 		})
 		body := buf.String()
+		body += fmt.Sprintf(
+			"\n\n<sub>:robot: This issue was synced with a spreadsheet by [gsheets-to-github-issues](https://github.com/cockroachlabs/gsheet-to-github-issues) by [%s](%s) on %s. Changes to titles, body and labels may be overwritten.</sub>",
+			ghUser.GetLogin(),
+			ghUser.GetHTMLURL(),
+			timeNow,
+		)
 
 		var iss *github.Issue
 		if issue == "" {
@@ -133,7 +139,9 @@ func sync(
 }
 
 func bodyMatch(a string, b string) bool {
-	return a == b
+	aSplit := strings.Split(a, "\n\n")
+	bSplit := strings.Split(b, "\n\n")
+	return strings.Join(aSplit[:len(aSplit)-1], "\n\n") == strings.Join(bSplit[:len(bSplit)-1], "\n\n")
 }
 
 func labelsMatch(a []string, gh []github.Label) bool {
