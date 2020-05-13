@@ -22,3 +22,5 @@ edit the issue if needbe.
 ## Example invocations
 
 * Geography: `go run . --spreadsheet_id=1USkxXFMZr_4lvnFR8YjUtJwdfCpZ0D6bI2uHDcV32-I --spreadsheet_range="Geography" --template=geography_builtin.tmpl.md`
+* Geometry: `go run . --spreadsheet_id=1USkxXFMZr_4lvnFR8YjUtJwdfCpZ0D6bI2uHDcV32-I --spreadsheet_range="Geometry" --template=geometry_builtin.tmpl.md`
+* GeometryCreations: `go run . --spreadsheet_id=1USkxXFMZr_4lvnFR8YjUtJwdfCpZ0D6bI2uHDcV32-I --spreadsheet_range="GeometryCreations" --template=geometry_creations_builtin.tmpl.md`

@@ -144,7 +144,7 @@ func bodyMatch(a string, b string) bool {
 	return strings.Join(aSplit[:len(aSplit)-1], "\n\n") == strings.Join(bSplit[:len(bSplit)-1], "\n\n")
 }
 
-func labelsMatch(a []string, gh []github.Label) bool {
+func labelsMatch(a []string, gh []*github.Label) bool {
 	b := make([]string, len(gh))
 	for i := range gh {
 		b[i] = gh[i].GetName()
