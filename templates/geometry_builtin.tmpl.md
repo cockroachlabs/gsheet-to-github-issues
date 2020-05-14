@@ -1,4 +1,4 @@
-Implement `{{ index .Args "function_capitalized_name" }}` on arguments {{ index .Args "function_args" }}, which should follow the [PostGIS implementation](https://postgis.net/docs/{{ index .Args "function_capitalized_name" }}.html).
+Implement `{{ index .Args "function_capitalized_name" }}` on arguments {{ index .Args "function_args" }}, which should adopt [PostGIS behaviour](https://postgis.net/docs/{{ index .Args "function_capitalized_name" }}.html).
 
 For Geometry builtins, please do the following:
 * Ideally add a relevant helper function in [`pkg/geo/geogfn`](https://github.com/cockroachdb/cockroach/tree/master/pkg/geo/geomfn) (parse and output related functions can go in [`pkg/geo`](https://github.com/cockroachdb/cockroach/tree/master/pkg/geo)). Add exhaustive unit tests here - you can run through example test cases and make sure that PostGIS and CRDB return the same result within a degree of accuracy (1cm for geography).
