@@ -52,6 +52,7 @@ func sync(
 	updateIssues := makeValueRange(spreadsheetName, len(rows), headers, "github_issue")
 	updateStatus := makeValueRange(spreadsheetName, len(rows), headers, "github_status")
 	updateAssigned := makeValueRange(spreadsheetName, len(rows), headers, "github_assigned")
+	updateReacts := makeValueRange(spreadsheetName, len(rows), headers, "github_reacts")
 
 	ctx := context.Background()
 	timeNow := time.Now().UTC().Format(time.RFC3339)
@@ -70,6 +71,7 @@ func sync(
 			updateIssues.Values = append(updateIssues.Values, []interface{}{issue})
 			updateStatus.Values = append(updateStatus.Values, []interface{}{row.mustGet("github_status")})
 			updateAssigned.Values = append(updateAssigned.Values, []interface{}{row.mustGet("github_assigned")})
+			updateReacts.Values = append(updateReacts.Values, []interface{}{row.mustGet("github_reacts")})
 			continue
 		}
 
@@ -113,7 +115,6 @@ func sync(
 				return nil, err
 			}
 			log.Printf("* checking existing issue for %q: %s", title, iss.GetHTMLURL())
-
 			if !bodyMatch(body, iss.GetBody()) || iss.GetTitle() != title || !labelsMatch(labels, iss.Labels) {
 				log.Printf("** modifying issue as there is a mismatch found")
 				iss, _, err = ghClient.Issues.Edit(ctx, *flagGithubOwner, *flagGithubRepo, int(issueNum), &github.IssueRequest{
@@ -134,8 +135,9 @@ func sync(
 			assigneeVal = fmt.Sprintf(`=HYPERLINK("%s", "@%s")`, iss.GetAssignee().GetHTMLURL(), iss.GetAssignee().GetLogin())
 		}
 		updateAssigned.Values = append(updateAssigned.Values, []interface{}{assigneeVal})
+		updateReacts.Values = append(updateReacts.Values, []interface{}{iss.GetReactions().GetTotalCount()})
 	}
-	return []*sheets.ValueRange{updateIssues, updateStatus, updateAssigned}, nil
+	return []*sheets.ValueRange{updateIssues, updateStatus, updateAssigned, updateReacts}, nil
 }
 
 func bodyMatch(a string, b string) bool {

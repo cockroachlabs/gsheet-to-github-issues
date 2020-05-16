@@ -7,7 +7,7 @@ edit the issue if needbe.
 ## Instructions
 
 * Create a Google Sheet with columns (`github_issue`, `github_status`, `github_title`,
-  `github_labels`, `github_ignore`, `github_assigned`).
+  `github_labels`, `github_ignore`, `github_assigned`, `github_reacts`).
 * Ensure `github_title` is filled in with some titles. [Example spreadsheet](https://docs.google.com/spreadsheets/d/1USkxXFMZr_4lvnFR8YjUtJwdfCpZ0D6bI2uHDcV32-I/edit#gid=0).
 * Get a [Google API Sheets Key](https://developers.google.com/sheets/api/quickstart/go)
   `credentials.json` file, and put it in `google_credentials.json` in the running directory.
