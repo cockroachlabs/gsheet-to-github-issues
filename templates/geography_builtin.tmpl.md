@@ -1,5 +1,7 @@
 Implement `{{ index .Args "function_capitalized_name" }}` on arguments {{ index .Args "function_args" }}, which should adopt [PostGIS behaviour](https://postgis.net/docs/{{ index .Args "function_capitalized_name" }}.html).
 
+_Observers: Please react to this issue if you need this functionality._
+
 For Geography builtins, please do the following:
 * Ideally add a relevant helper function in [`pkg/geo/geogfn`](https://github.com/cockroachdb/cockroach/tree/master/pkg/geo/geogfn) (parse and output related functions can go in [`pkg/geo`](https://github.com/cockroachdb/cockroach/tree/master/pkg/geo)). Add exhaustive unit tests here - you can run through example test cases and make sure that PostGIS and CRDB return the same result within a degree of accuracy (1cm for geography).
 * Create a new builtin that references this function in [`pkg/sql/sem/builtins/geo_builtins.go`](https://github.com/cockroachdb/cockroach/blob/master/pkg/sql/sem/builtins/geo_builtins.go). Note that we currently do not support optional arguments, so we define functions that have optional arguments once without the optional argument (using the default value in the optional position), and once with the optional argument.

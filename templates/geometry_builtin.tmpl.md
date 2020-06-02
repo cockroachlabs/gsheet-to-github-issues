@@ -1,5 +1,7 @@
 Implement `{{ index .Args "function_capitalized_name" }}` on arguments {{ index .Args "function_args" }}, which should adopt [PostGIS behaviour](https://postgis.net/docs/{{ index .Args "function_capitalized_name" }}.html).
 
+_Observers: Please react to this issue if you need this functionality._
+
 For Geometry builtins, please do the following:
 * Ideally add a relevant helper function in [`pkg/geo/geomfn`](https://github.com/cockroachdb/cockroach/tree/master/pkg/geo/geomfn) (parse and output related functions can go in [`pkg/geo`](https://github.com/cockroachdb/cockroach/tree/master/pkg/geo)). Add exhaustive unit tests here - you can run through example test cases and make sure that PostGIS and CRDB return the same result within a degree of accuracy (1cm for geography).
   * When using GEOS, you can reference the [C API](https://github.com/libgeos/geos/blob/master/capi/geos_c.h.in) for which functions are available. Unfortunately, Windows is not currently supported when using GEOS.
