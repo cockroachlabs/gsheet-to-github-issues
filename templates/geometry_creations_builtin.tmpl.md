@@ -13,7 +13,7 @@ For Geometry builtins, please do the following:
 You can follow #48441 for an example PR.
 
 {{if ne (index .Args "expected_work") "" }}
-The following additional guidance has been issued on implementing this function:
+**The following additional guidance has been issued on implementing this function:**
 
 {{index .Args "expected_work"}}
 {{end}}
