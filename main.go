@@ -43,6 +43,12 @@ var (
 		"cockroach",
 		"The repo on GitHub to sync with.",
 	)
+
+	flagProjectColumnID = flag.Int(
+		"github_project_column_id",
+		0,
+		"The ColumnID to place any new issue in.",
+	)
 )
 
 func main() {
@@ -90,7 +96,7 @@ func main() {
 	// Sync with Github Issues.
 	log.Print("syncing with github issues...")
 
-	updates, err := sync(tpl, spreadsheetName, headers, rows, ghClient)
+	updates, err := sync(tpl, spreadsheetName, headers, rows, ghClient, int64(*flagProjectColumnID))
 	if err != nil {
 		log.Fatalf("failed to sync: %v", err)
 	}

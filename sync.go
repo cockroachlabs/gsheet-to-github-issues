@@ -48,6 +48,7 @@ func sync(
 	headers *headerRow,
 	rows []sheetRow,
 	ghClient *github.Client,
+	colID int64,
 ) ([]*sheets.ValueRange, error) {
 	updateIssues := makeValueRange(spreadsheetName, len(rows), headers, "github_issue")
 	updateStatus := makeValueRange(spreadsheetName, len(rows), headers, "github_status")
@@ -100,6 +101,15 @@ func sync(
 			log.Printf("* created issue for %q: %s", title, iss.GetHTMLURL())
 			if err != nil {
 				return nil, err
+			}
+			if colID != 0 {
+				_, _, err := ghClient.Projects.CreateProjectCard(ctx, colID, &github.ProjectCardOptions{
+					ContentID:   iss.GetID(),
+					ContentType: "Issue",
+				})
+				if err != nil {
+					return nil, err
+				}
 			}
 		} else {
 			// Truncate leading `#`.
